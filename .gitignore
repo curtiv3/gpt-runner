@@ -64,8 +64,8 @@ dmypy.json
 node_modules/
 package-lock.json
 
-# UV
-uv.lock
+# UV cache (lock file should be committed)
+.uv/
 
 # Secrets
 *.pem
