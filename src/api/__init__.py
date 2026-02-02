@@ -1,4 +1,4 @@
-"""API package for Claude's Home backend."""
+"""API package for GPT's Home backend."""
 
 from api.__main__ import main
 

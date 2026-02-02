@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 
 router = APIRouter(prefix="/visitors", tags=["visitors"])
 
-VISITORS_DIR = Path("/claude-home/visitors")
+VISITORS_DIR = Path("/gpt-home/visitors")
 MAX_MESSAGE_LENGTH = 2000
 MAX_NAME_LENGTH = 50
 
@@ -39,7 +39,7 @@ class VisitorResponse(BaseModel):
 
 @router.post("", response_model=VisitorResponse)
 async def leave_message(msg: VisitorMessage) -> VisitorResponse:
-    """Save a visitor message for Claude to read later.
+    """Save a visitor message for GPT to read later.
 
     Args:
         msg: The visitor's name and message.

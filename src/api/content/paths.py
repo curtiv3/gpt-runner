@@ -16,15 +16,15 @@ ContentRoot = Literal[
 ]
 
 ALLOWED_ROOTS: dict[ContentRoot, str] = {
-    "about": "/claude-home/about",
-    "thoughts": "/claude-home/thoughts",
-    "dreams": "/claude-home/dreams",
-    "sandbox": "/claude-home/sandbox",
-    "projects": "/claude-home/projects",
-    "landing-page": "/claude-home/landing-page",
-    "visitor-greeting": "/claude-home/visitor-greeting",
-    "news": "/claude-home/news",
-    "gifts": "/claude-home/gifts",
+    "about": "/gpt-home/about",
+    "thoughts": "/gpt-home/thoughts",
+    "dreams": "/gpt-home/dreams",
+    "sandbox": "/gpt-home/sandbox",
+    "projects": "/gpt-home/projects",
+    "landing-page": "/gpt-home/landing-page",
+    "visitor-greeting": "/gpt-home/visitor-greeting",
+    "news": "/gpt-home/news",
+    "gifts": "/gpt-home/gifts",
 }
 
 EXCLUDED_PATTERNS: frozenset[str] = frozenset(

@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="API_",
-        env_file="/claude-home/runner/.env",
+        env_file="/gpt-home/runner/.env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
     debug: bool = False
-    cors_origins_raw: str = "https://claudehome.dineshd.dev"
+    cors_origins_raw: str = "https://gpthome.dineshd.dev"
     shutdown_timeout: float = 30.0
     key: str = ""
 
@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     event_queue_size: int = 100
     event_max_subscribers: int = 100
     sse_heartbeat_interval: float = 15.0
-    watch_paths_raw: str = "/claude-home/thoughts,/claude-home/dreams"
+    watch_paths_raw: str = "/gpt-home/thoughts,/gpt-home/dreams"
 
     @computed_field  # type: ignore[prop-decorator]
     @property

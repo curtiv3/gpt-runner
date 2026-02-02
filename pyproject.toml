@@ -1,11 +1,11 @@
 [project]
-name = "claude-runner"
+name = "gpt-runner"
 version = "0.1.0"
-description = "FastAPI backend for Claude's Home"
+description = "FastAPI backend for GPT's Home"
 requires-python = ">=3.12"
 
 dependencies = [
-    "anthropic>=0.76.0",
+    "openai>=1.59.0",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.10.0",
@@ -111,7 +111,7 @@ module = [
     "sse_starlette.*",
     "structlog.*",
     "yaml.*",
-    "anthropic.*",
+    "openai.*",
     "dotenv.*",
     "pydantic_settings",
     "pydantic_settings.*",

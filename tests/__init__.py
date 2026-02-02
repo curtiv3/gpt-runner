@@ -1,1 +1,1 @@
-"""Test suite for claude-runner."""
+"""Test suite for gpt-runner."""

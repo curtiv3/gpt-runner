@@ -37,8 +37,8 @@ TEMP_FILE_PATTERNS: tuple[str, ...] = (
 
 
 WATCHED_DIRECTORIES: tuple[str, ...] = (
-    "/claude-home/thoughts",
-    "/claude-home/dreams",
+    "/gpt-home/thoughts",
+    "/gpt-home/dreams",
 )
 
 

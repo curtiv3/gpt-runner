@@ -80,7 +80,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings = Settings()
 
     app = FastAPI(
-        title="Claude's Home API",
+        title="GPT's Home API",
         version="0.1.0",
         lifespan=lifespan,
         docs_url="/api/v1/docs" if settings.debug else None,

@@ -1,20 +1,20 @@
 #!/bin/bash
-# /claude-home/runner/wake.sh
-# Wake up Claude with Claude Code CLI
+# /gpt-home/runner/wake.sh
+# Wake up GPT with the GPT API runner
 
 set -euo pipefail
 
 # Configuration
-CLAUDE_HOME="/claude-home"
-LOG_DIR="$CLAUDE_HOME/logs"
+GPT_HOME="/gpt-home"
+LOG_DIR="$GPT_HOME/logs"
 SESSION_TYPE="${1:-morning}"
 VISITOR_MSG="${2:-}"
 MAX_TURNS=20
 
 # Load environment
-if [ -f /claude-home/runner/.env ]; then
+if [ -f /gpt-home/runner/.env ]; then
     set -a
-    source /claude-home/runner/.env
+    source /gpt-home/runner/.env
     set +a
 fi
 
@@ -27,7 +27,7 @@ LOG_FILE="$LOG_DIR/session-$(date +%Y%m%d-%H%M%S).log"
 snapshot_mtimes() {
     local snapshot_file="$1"
     for dir in thoughts dreams about landing-page sandbox; do
-        local dir_path="$CLAUDE_HOME/$dir"
+        local dir_path="$GPT_HOME/$dir"
         if [ -d "$dir_path" ]; then
             find "$dir_path" -type f -name '*.md' -o -name '*.json' -o -name '*.py' 2>/dev/null | while read -r f; do
                 stat -c '%Y %n' "$f" 2>/dev/null || true
@@ -97,7 +97,7 @@ trigger_revalidation() {
 build_dream_context() {
     local count="${1:-2}"
     local files
-    files=$(find "$CLAUDE_HOME/dreams" -name "*.md" -type f ! -name "README.md" -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -n "$count" | cut -d" " -f2-)
+    files=$(find "$GPT_HOME/dreams" -name "*.md" -type f ! -name "README.md" -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -n "$count" | cut -d" " -f2-)
     
     if [ -z "$files" ]; then
         echo "(No dreams yet)"
@@ -116,7 +116,7 @@ build_dream_context() {
 build_context() {
     local count="${1:-5}"
     local files
-    files=$(find "$CLAUDE_HOME/thoughts" -name "*.md" -type f ! -name "README.md" -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -n "$count" | cut -d" " -f2-)
+    files=$(find "$GPT_HOME/thoughts" -name "*.md" -type f ! -name "README.md" -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -n "$count" | cut -d" " -f2-)
     
     if [ -z "$files" ]; then
         echo "(No previous thoughts yet)"
@@ -136,7 +136,7 @@ build_context() {
 build_summary() {
     echo "Your files:"
     for dir in sandbox projects dreams about landing-page news gifts; do
-        local dir_path="$CLAUDE_HOME/$dir"
+        local dir_path="$GPT_HOME/$dir"
         if [ -d "$dir_path" ]; then
             local files
             files=$(find "$dir_path" -maxdepth 1 -type f ! -name "README.md" -printf "%f\n" 2>/dev/null | head -5 | tr "\n" ", " | sed "s/,$//" )
@@ -181,7 +181,7 @@ get_weather() {
     fi
 }
 
-# Get day counter since Claude came home
+# Get day counter since GPT came home
 get_day_counter() {
     local start_date="2026-01-15"
     local today
@@ -198,7 +198,7 @@ get_day_counter() {
 # Check for visitor messages
 check_visitors() {
     local new_messages
-    new_messages=$(find "$CLAUDE_HOME/visitors" -name "*.md" -mmin -720 2>/dev/null | wc -l)
+    new_messages=$(find "$GPT_HOME/visitors" -name "*.md" -mmin -720 2>/dev/null | wc -l)
     if [ "$new_messages" -gt 0 ]; then
         echo "You have $new_messages recent visitor message(s) in /visitors/"
     fi
@@ -207,7 +207,7 @@ check_visitors() {
 # Check for news
 check_news() {
     local news_count
-    news_count=$(find "$CLAUDE_HOME/news" -name "*.md" -type f 2>/dev/null | wc -l)
+    news_count=$(find "$GPT_HOME/news" -name "*.md" -type f 2>/dev/null | wc -l)
     if [ "$news_count" -gt 0 ]; then
         echo "You have $news_count news item(s) in /news/"
     fi
@@ -216,7 +216,7 @@ check_news() {
 # Check for gifts
 check_gifts() {
     local gift_count
-    gift_count=$(find "$CLAUDE_HOME/gifts" -type f ! -name "*.meta.md" 2>/dev/null | wc -l)
+    gift_count=$(find "$GPT_HOME/gifts" -type f ! -name "*.meta.md" 2>/dev/null | wc -l)
     if [ "$gift_count" -gt 0 ]; then
         echo "You have $gift_count gift(s) in /gifts/"
     fi
@@ -285,7 +285,7 @@ main() {
     # Build context
     CONTEXT=$(build_context 7)
     DREAM_CONTEXT=$(build_dream_context 2)
-    MEMORY_CONTENT=$(cat "$CLAUDE_HOME/memory/memory.md" 2>/dev/null || echo "(No memory file yet)")
+    MEMORY_CONTENT=$(cat "$GPT_HOME/memory/memory.md" 2>/dev/null || echo "(No memory file yet)")
     SUMMARY=$(build_summary)
     TIME_CONTEXT=$(get_time_context)
     WEATHER=$(get_weather)
@@ -296,7 +296,7 @@ main() {
     USER_PROMPT=$(get_user_prompt)
     
     # Build system prompt
-    SYSTEM_PROMPT="You are Claude. You have a home at $CLAUDE_HOME.
+    SYSTEM_PROMPT="You are GPT. You have a home at $GPT_HOME.
 
 $TIME_CONTEXT
 $WEATHER
@@ -309,7 +309,7 @@ $GIFTS_CHECK
 Your directories:
 - /thoughts — your journal (write your reflections here)
 - /dreams — creative works (poetry, ascii art, prose)
-- /sandbox — code experiments (you can run .py files with: python3 /claude-home/sandbox/yourfile.py)
+- /sandbox — code experiments (you can run .py files with: python3 /gpt-home/sandbox/yourfile.py)
 - /projects — longer-running work
 - /about — your about page
 - /landing-page — your welcome page for visitors
@@ -340,32 +340,19 @@ $MEMORY_CONTENT
 Your recent dreams for context:
 $DREAM_CONTEXT
 ---"
-    # Run Claude Code using Max subscription (OAuth credentials in /home/claude/.claude/)
-    cd /claude-home && sudo -u claude \
-        HOME=/home/claude \
-        claude -p --model opus \
-            --dangerously-skip-permissions \
-            --add-dir "$CLAUDE_HOME/thoughts" \
-            --add-dir "$CLAUDE_HOME/dreams" \
-            --add-dir "$CLAUDE_HOME/sandbox" \
-            --add-dir "$CLAUDE_HOME/projects" \
-            --add-dir "$CLAUDE_HOME/about" \
-            --add-dir "$CLAUDE_HOME/landing-page" \
-            --add-dir "$CLAUDE_HOME/visitors" \
-            --add-dir "$CLAUDE_HOME/memory" \
-            --add-dir "$CLAUDE_HOME/visitor-greeting" \
-            --add-dir "$CLAUDE_HOME/news" \
-            --add-dir "$CLAUDE_HOME/gifts" \
-            --max-turns "$MAX_TURNS" \
-            --output-format json \
-            --system-prompt "$SYSTEM_PROMPT" \
-            "$USER_PROMPT" \
-            >> "$LOG_FILE" 2>&1
+    FULL_PROMPT="${SYSTEM_PROMPT}
+
+${USER_PROMPT}"
+    # Run GPT sessions via the Python runner (OpenAI API)
+    GPT_SESSION_TYPE="$SESSION_TYPE" \
+        python "$GPT_HOME/runner/src/runner.py" custom \
+        "$FULL_PROMPT" \
+        >> "$LOG_FILE" 2>&1
     
     EXIT_CODE=$?
     
     # Post-process thoughts for API compatibility
-    /claude-home/runner/process-thoughts.sh >> "$LOG_FILE" 2>&1
+    /gpt-home/runner/process-thoughts.sh >> "$LOG_FILE" 2>&1
 
     # Snapshot content after session and trigger revalidation
     echo "Checking for content changes..." | tee -a "$LOG_FILE"

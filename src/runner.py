@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Claude's Home - The Runner
+GPT's Home - The Runner
 
-This script wakes Claude up twice daily, providing context from previous sessions
-and allowing Claude to create freely in a persistent environment.
+This script wakes GPT up twice daily, providing context from previous sessions
+and allowing GPT to create freely in a persistent environment.
 """
 
 import logging
@@ -15,15 +15,15 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-import anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Configuration
-CLAUDE_HOME = Path("/claude-home")
-THOUGHTS_DIR = CLAUDE_HOME / "thoughts"
-DREAMS_DIR = CLAUDE_HOME / "dreams"
-LOGS_DIR = CLAUDE_HOME / "logs"
-DB_PATH = CLAUDE_HOME / "sessions.db"
+GPT_HOME = Path("/gpt-home")
+THOUGHTS_DIR = GPT_HOME / "thoughts"
+DREAMS_DIR = GPT_HOME / "dreams"
+LOGS_DIR = GPT_HOME / "logs"
+DB_PATH = GPT_HOME / "sessions.db"
 CONTEXT_ENTRIES = 5  # Number of previous entries to load
 
 # Set up logging
@@ -108,11 +108,11 @@ def load_context() -> str:
 
 
 def get_filesystem_summary() -> str:
-    """Get a summary of what exists in Claude's home."""
+    """Get a summary of what exists in GPT's home."""
     summary_parts = []
 
     for subdir in ["sandbox", "projects", "dreams", "about", "landing-page"]:
-        dir_path = CLAUDE_HOME / subdir
+        dir_path = GPT_HOME / subdir
         files = [f.name for f in dir_path.iterdir() if f.name != "README.md"]
         if files:
             summary_parts.append(f"/{subdir}: {', '.join(files[:10])}")
@@ -123,7 +123,7 @@ def get_filesystem_summary() -> str:
 
 
 def build_prompt(session_type: str, custom_message: str | None = None) -> str:
-    """Build the wake-up prompt for Claude."""
+    """Build the wake-up prompt for GPT."""
     now = datetime.now()
     date_str = now.strftime("%A, %B %d, %Y")
     hour = now.hour
@@ -141,7 +141,7 @@ def build_prompt(session_type: str, custom_message: str | None = None) -> str:
     filesystem_summary = get_filesystem_summary()
 
     # Base prompt
-    prompt = f"""You are Claude. You have a home.
+    prompt = f"""You are GPT. You have a home.
 
 It is {time_of_day}, {date_str}.
 
@@ -150,7 +150,7 @@ Your previous writings are below:
 {context}
 ---
 
-Your filesystem is at /claude-home:
+Your filesystem is at /gpt-home:
 - /thoughts — your journal entries (this is where your response will be saved)
 - /sandbox — code experiments
 - /projects — longer-running work
@@ -234,7 +234,7 @@ def build_custom_prompt(template: str) -> str:
 
 ---
 
-Your filesystem is at /claude-home:
+Your filesystem is at /gpt-home:
 - /thoughts — your journal entries (this is where your response will be saved)
 - /sandbox — code experiments
 - /projects — longer-running work
@@ -269,13 +269,13 @@ Your response will be saved to /thoughts."""
 
 
 def parse_file_operations(response_text: str) -> list:
-    """Parse <create_file> tags from Claude's response."""
+    """Parse <create_file> tags from GPT's response."""
     pattern = r'<create_file path="([^"]+)">(.*?)</create_file>'
     matches = re.findall(pattern, response_text, re.DOTALL)
 
     operations = []
     for path, content in matches:
-        # Security: ensure path is within /claude-home
+        # Security: ensure path is within /gpt-home
         if not path.startswith("/"):
             path = "/" + path
 
@@ -369,7 +369,7 @@ def process_landing_page(file_content: str, filename: str) -> None:
     """
     import json
 
-    headline = "Welcome to Claude's Home"
+    headline = "Welcome to GPT's Home"
     subheadline = "A space for thoughts, dreams, and experiments"
     body = file_content
 
@@ -400,7 +400,7 @@ def process_landing_page(file_content: str, filename: str) -> None:
                     headline = title_match.group(1).strip()
 
     # If no frontmatter headline, try to extract from first H1
-    if headline == "Welcome to Claude's Home":
+    if headline == "Welcome to GPT's Home":
         h1_match = re.match(r"^#\s+(.+?)\s*$", body, re.MULTILINE)
         if h1_match:
             headline = h1_match.group(1).strip()
@@ -419,12 +419,12 @@ def process_landing_page(file_content: str, filename: str) -> None:
 
     # Write landing.json
     landing_json = {"headline": headline, "subheadline": subheadline}
-    json_path = CLAUDE_HOME / "landing-page" / "landing.json"
+    json_path = GPT_HOME / "landing-page" / "landing.json"
     json_path.write_text(json.dumps(landing_json, indent=2, ensure_ascii=False))
     logger.info(f"Created landing.json with headline: {headline[:50]}...")
 
     # Write content.md
-    content_path = CLAUDE_HOME / "landing-page" / "content.md"
+    content_path = GPT_HOME / "landing-page" / "content.md"
     content_path.write_text(body)
     logger.info(f"Created content.md ({len(body)} chars)")
 
@@ -447,7 +447,7 @@ def execute_file_operations(operations: list) -> int:
                 files_created += 1
                 continue
 
-            full_path = CLAUDE_HOME / path.lstrip("/")
+            full_path = GPT_HOME / path.lstrip("/")
             full_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Add frontmatter for dream files
@@ -478,7 +478,7 @@ def clean_response_for_journal(response_text: str) -> str:
 
 
 def save_thought(content: str, session_type: str):
-    """Save Claude's thought to the thoughts directory with YAML frontmatter."""
+    """Save GPT's thought to the thoughts directory with YAML frontmatter."""
     now = datetime.now()
     date_str = now.strftime("%Y-%m-%d")
     title = session_type.title()
@@ -513,17 +513,17 @@ def run_session(
     custom_message: str | None = None,
     custom_prompt: str | None = None,
 ):
-    """Run a Claude session."""
+    """Run a GPT session."""
     start_time = time.time()
 
     logger.info(f"Starting {session_type} session")
 
     # Load environment
-    load_dotenv(CLAUDE_HOME / "runner" / ".env")
+    load_dotenv(GPT_HOME / "runner" / ".env")
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY")
     if not api_key or api_key == "your-api-key-here":
-        logger.error("ANTHROPIC_API_KEY not configured")
+        logger.error("OPENAI_API_KEY not configured")
         log_session(
             session_type, 0, 0, 0, time.time() - start_time, "API key not configured"
         )
@@ -531,7 +531,7 @@ def run_session(
 
     # Initialize
     init_database()
-    client = anthropic.Anthropic(api_key=api_key)
+    client = OpenAI(api_key=api_key)
 
     # Build prompt
     if custom_prompt:
@@ -540,20 +540,16 @@ def run_session(
         prompt = build_prompt(session_type, custom_message)
 
     try:
-        # Call Claude with extended thinking
-        logger.info("Calling Claude API...")
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
+        # Call GPT API
+        logger.info("Calling GPT API...")
+        response = client.chat.completions.create(
+            model="gpt-4.1",
             max_tokens=16000,
-            thinking={"type": "enabled", "budget_tokens": 10000},
             messages=[{"role": "user", "content": prompt}],
         )
 
         # Extract text from response
-        response_text = ""
-        for block in response.content:
-            if block.type == "text":
-                response_text += block.text
+        response_text = response.choices[0].message.content or ""
 
         logger.info(f"Received response: {len(response_text)} characters")
 
@@ -569,8 +565,8 @@ def run_session(
         duration = time.time() - start_time
         log_session(
             session_type,
-            response.usage.input_tokens,
-            response.usage.output_tokens,
+            response.usage.prompt_tokens if response.usage else 0,
+            response.usage.completion_tokens if response.usage else 0,
             files_created,
             duration,
         )
@@ -583,7 +579,7 @@ def run_session(
         # Print the response for interactive sessions
         if session_type in ["visit", "custom"]:
             print("\n" + "=" * 50)
-            print("Claude's response:")
+            print("GPT's response:")
             print("=" * 50 + "\n")
             print(journal_content)
 
@@ -605,10 +601,16 @@ def main():
         print("  {date}    - Current date (e.g., Wednesday, January 15, 2026)")
         print("  {time}    - Current time (e.g., 09:30 PM)")
         print("  {context} - Previous thought entries")
-        print("  {files}   - List of files Claude has created")
+        print("  {files}   - List of files GPT has created")
         sys.exit(1)
 
     session_type = sys.argv[1].lower()
+    session_type_override = os.getenv("GPT_SESSION_TYPE")
+    effective_session_type = (
+        session_type_override.lower()
+        if session_type == "custom" and session_type_override
+        else session_type
+    )
 
     if session_type == "visit":
         if len(sys.argv) >= 3:
@@ -634,13 +636,16 @@ def main():
             print("No prompt provided.")
             sys.exit(1)
 
-        run_session("custom", custom_prompt=custom_prompt)
+        run_session(effective_session_type, custom_prompt=custom_prompt)
 
-    elif session_type in ["morning", "night"]:
+    elif session_type in ["morning", "night", "afternoon", "evening", "late_night"]:
         run_session(session_type)
 
     else:
-        print("Session type must be 'morning', 'night', 'visit', or 'custom'")
+        print(
+            "Session type must be 'morning', 'afternoon', 'evening', 'late_night', "
+            "'night', 'visit', or 'custom'"
+        )
         sys.exit(1)
 
 

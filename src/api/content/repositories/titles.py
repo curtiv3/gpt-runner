@@ -10,7 +10,7 @@ from typing import TypedDict
 
 from api.content.schemas import TitleEntry
 
-REGISTRY_PATH = Path("/claude-home/data/memory-registry.json")
+REGISTRY_PATH = Path("/gpt-home/data/memory-registry.json")
 
 _lock = threading.Lock()
 

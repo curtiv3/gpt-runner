@@ -17,20 +17,25 @@ logger = structlog.get_logger()
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-CLAUDE_HOME = Path("/claude-home")
-WAKE_SCRIPT = CLAUDE_HOME / "runner" / "wake.sh"
-LOG_DIR = CLAUDE_HOME / "logs"
-NEWS_DIR = CLAUDE_HOME / "news"
-GIFTS_DIR = CLAUDE_HOME / "gifts"
-READINGS_DIR = CLAUDE_HOME / "readings"
+GPT_HOME = Path("/gpt-home")
+WAKE_SCRIPT = GPT_HOME / "runner" / "wake.sh"
+LOG_DIR = GPT_HOME / "logs"
+NEWS_DIR = GPT_HOME / "news"
+GIFTS_DIR = GPT_HOME / "gifts"
+READINGS_DIR = GPT_HOME / "readings"
+GPT_GROUP = os.getenv("GPT_GROUP", "gpt")
 
 MAX_GIFT_SIZE = 2 * 1024 * 1024  # 2MB
 
 
-def set_claude_permissions(filepath: Path) -> None:
-    """Set file ownership to root:claude with 644 permissions."""
-    claude_gid = grp.getgrnam("claude").gr_gid
-    os.chown(filepath, 0, claude_gid)
+def set_gpt_permissions(filepath: Path) -> None:
+    """Set file ownership to root:gpt with 644 permissions."""
+    try:
+        gpt_gid = grp.getgrnam(GPT_GROUP).gr_gid
+    except KeyError:
+        logger.warning("gpt_group_missing", group=GPT_GROUP)
+        gpt_gid = os.getgid()
+    os.chown(filepath, 0, gpt_gid)
     filepath.chmod(0o644)
 
 
@@ -148,7 +153,7 @@ def slugify(text: str) -> str:
 
 @router.post("/wake", response_model=WakeResponse, status_code=202)
 async def trigger_wake(request: WakeRequest) -> WakeResponse:
-    """Trigger a Claude wake session.
+    """Trigger a GPT wake session.
 
     Spawns wake.sh in the background and returns immediately.
     The session runs asynchronously.
@@ -236,7 +241,7 @@ type: {request.type.value}
 
     try:
         filepath.write_text(full_content, encoding="utf-8")
-        set_claude_permissions(filepath)
+        set_gpt_permissions(filepath)
         logger.info("news_uploaded", filename=filename, type=request.type.value)
     except OSError as e:
         logger.error("news_upload_failed", error=str(e))
@@ -293,7 +298,7 @@ async def upload_gift(request: GiftUploadRequest) -> GiftUploadResponse:
 
         try:
             filepath.write_bytes(content_bytes)
-            set_claude_permissions(filepath)
+            set_gpt_permissions(filepath)
         except OSError as e:
             logger.error("gift_upload_failed", error=str(e))
             raise HTTPException(status_code=500, detail="Failed to save gift") from e
@@ -301,7 +306,7 @@ async def upload_gift(request: GiftUploadRequest) -> GiftUploadResponse:
     elif request.content_type == GiftContentType.HTML:
         try:
             filepath.write_text(request.content, encoding="utf-8")
-            set_claude_permissions(filepath)
+            set_gpt_permissions(filepath)
         except OSError as e:
             logger.error("gift_upload_failed", error=str(e))
             raise HTTPException(status_code=500, detail="Failed to save gift") from e
@@ -321,7 +326,7 @@ type: {request.content_type.value}
 
         meta_path = GIFTS_DIR / f"{request.filename}.meta.md"
         meta_path.write_text(meta_content, encoding="utf-8")
-        set_claude_permissions(meta_path)
+        set_gpt_permissions(meta_path)
 
         logger.info(
             "gift_uploaded", filename=request.filename, type=request.content_type.value
@@ -343,7 +348,7 @@ type: {request.content_type.value}
 
         try:
             filepath.write_text(full_content, encoding="utf-8")
-            set_claude_permissions(filepath)
+            set_gpt_permissions(filepath)
             logger.info(
                 "gift_uploaded",
                 filename=request.filename,
@@ -397,7 +402,7 @@ title: {request.title}
 
     try:
         filepath.write_text(full_content, encoding="utf-8")
-        set_claude_permissions(filepath)
+        set_gpt_permissions(filepath)
         logger.info("reading_uploaded", filename=filename, title=request.title)
     except OSError as e:
         logger.error("reading_upload_failed", error=str(e))

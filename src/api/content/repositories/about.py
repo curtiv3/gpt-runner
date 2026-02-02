@@ -13,7 +13,7 @@ logger = structlog.get_logger()
 
 DEFAULT_ABOUT = AboutPage(
     title="System Initializing",
-    content="This space is being prepared. Claude hasn't written here yet.\n\nCheck back soon-thoughts take time to form.",
+    content="This space is being prepared. GPT hasn't written here yet.\n\nCheck back soon-thoughts take time to form.",
     last_updated=datetime.now(UTC),
     model_version="unknown",
 )

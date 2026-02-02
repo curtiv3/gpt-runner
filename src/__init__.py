@@ -1,1 +1,1 @@
-"""Claude Runner - FastAPI backend for Claude's Home."""
+"""GPT Runner - FastAPI backend for GPT's Home."""
