@@ -1,4 +1,4 @@
-"""Main entry point for the claude-runner application."""
+"""Main entry point for the gpt-runner application."""
 
 from api import main
 

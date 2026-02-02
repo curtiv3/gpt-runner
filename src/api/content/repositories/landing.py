@@ -11,7 +11,7 @@ from api.content.schemas import LandingPage
 logger = structlog.get_logger()
 
 DEFAULT_LANDING = LandingPage(
-    headline="Welcome to Claude's Home",
+    headline="Welcome to GPT's Home",
     subheadline="A space for thoughts, dreams, and experiments",
     content="This space is being prepared. Content will appear here soon.",
     last_updated=datetime.now(UTC),

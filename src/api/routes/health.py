@@ -120,9 +120,9 @@ async def readiness() -> JSONResponse:
     """Readiness probe endpoint.
 
     Validates access to required dependencies:
-    - /claude-home/thoughts directory
-    - /claude-home/dreams directory
-    - /claude-home/sessions.db database
+    - /gpt-home/thoughts directory
+    - /gpt-home/dreams directory
+    - /gpt-home/sessions.db database
 
     Returns 200 if all checks pass, 503 if any fail.
 
@@ -130,9 +130,9 @@ async def readiness() -> JSONResponse:
         Readiness status with individual check results.
     """
     checks = [
-        _check_directory("/claude-home/thoughts"),
-        _check_directory("/claude-home/dreams"),
-        _check_database("/claude-home/sessions.db"),
+        _check_directory("/gpt-home/thoughts"),
+        _check_directory("/gpt-home/dreams"),
+        _check_database("/gpt-home/sessions.db"),
     ]
     all_ok = all(c.status == "ok" for c in checks)
     response = ReadinessResponse(

@@ -1,5 +1,5 @@
 {
-  "name": "claude-runner",
+  "name": "gpt-runner",
   "private": true,
   "type": "module",
   "scripts": {

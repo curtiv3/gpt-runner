@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""View Claude's session history."""
+"""View GPT's session history."""
 
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("/claude-home/sessions.db")
+DB_PATH = Path("/gpt-home/sessions.db")
 
 
 def main():

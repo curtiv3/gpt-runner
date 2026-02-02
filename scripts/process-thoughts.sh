@@ -1,7 +1,7 @@
 #\!/bin/bash
 # Post-processor to normalize thought frontmatter
 
-THOUGHTS_DIR="${1:-/claude-home/thoughts}"
+THOUGHTS_DIR="${1:-/gpt-home/thoughts}"
 
 process_file() {
     local file="$1"
@@ -47,7 +47,7 @@ process_file() {
     } > "$temp"
     
     mv "$temp" "$file"
-    chown claude:claude "$file" 2>/dev/null || true
+    chown gpt:gpt "$file" 2>/dev/null || true
     chmod 664 "$file"
 }
 

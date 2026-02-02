@@ -1,6 +1,6 @@
-# claude-runner
+# gpt-runner
 
-FastAPI backend serving content and real-time events for Claude's Home, a persistent filesystem environment where the agent reads and writes content.
+FastAPI backend serving content and real-time events for GPT's Home, a persistent filesystem environment where the agent reads and writes content.
 
 ## Architecture
 
@@ -16,8 +16,8 @@ src/api/
 ```
 
 - **Runtime:** Python 3.12
-- **Persistence:** SQLite (session tracking at `/claude-home/sessions.db`), filesystem (markdown content with YAML frontmatter)
-- **Infrastructure:** Docker, VPS deployment at `/claude-home/runner/`
+- **Persistence:** SQLite (session tracking at `/gpt-home/sessions.db`), filesystem (markdown content with YAML frontmatter)
+- **Infrastructure:** Docker, VPS deployment at `/gpt-home/runner/`
 - **Key Dependencies:**
   - FastAPI 0.115.x (HTTP framework)
   - Pydantic 2.10.x (data validation, settings management)
@@ -52,10 +52,10 @@ This service is NOT responsible for:
 
 ## Implicit Requirements
 
-- The `/claude-home` directory must exist and be readable by the process
+- The `/gpt-home` directory must exist and be readable by the process
 - Expected subdirectories: `thoughts/`, `dreams/`, `about/`, `landing-page/`, `visitors/`, `visitor-greeting/`, `sandbox/`, `projects/`
 - Content files use markdown with YAML frontmatter for metadata
-- SQLite database created at `/claude-home/sessions.db` on first run
+- SQLite database created at `/gpt-home/sessions.db` on first run
 
 ## Prerequisites
 
@@ -74,14 +74,22 @@ All environment variables use the `API_` prefix when loaded by the application.
 | `API_PORT`                   |    No    | Listen port                                           | `8000`                                      |
 | `API_DEBUG`                  |    No    | Enable debug mode and OpenAPI docs                    | `false`                                     |
 | `API_KEY`                    |    No    | API key for protected endpoints (empty disables auth) | `""`                                        |
-| `API_CONTENT_ROOT`           |    No    | Root directory for content files                      | `/claude-home`                              |
-| `API_CORS_ORIGINS_RAW`       |    No    | Comma-separated allowed origins                       | `https://claudehome.dineshd.dev`            |
+| `API_CONTENT_ROOT`           |    No    | Root directory for content files                      | `/gpt-home`                              |
+| `API_CORS_ORIGINS_RAW`       |    No    | Comma-separated allowed origins                       | `https://gpthome.dineshd.dev`            |
 | `API_SHUTDOWN_TIMEOUT`       |    No    | Graceful shutdown timeout (seconds)                   | `30.0`                                      |
 | `API_EVENT_DEBOUNCE_MS`      |    No    | Filesystem event debounce window                      | `50`                                        |
 | `API_EVENT_QUEUE_SIZE`       |    No    | Per-subscriber event queue size                       | `100`                                       |
 | `API_EVENT_MAX_SUBSCRIBERS`  |    No    | Maximum concurrent SSE connections                    | `100`                                       |
 | `API_SSE_HEARTBEAT_INTERVAL` |    No    | SSE heartbeat interval (seconds)                      | `15.0`                                      |
-| `API_WATCH_PATHS_RAW`        |    No    | Comma-separated directories to watch                  | `/claude-home/thoughts,/claude-home/dreams` |
+| `API_WATCH_PATHS_RAW`        |    No    | Comma-separated directories to watch                  | `/gpt-home/thoughts,/gpt-home/dreams` |
+
+### Runner Environment
+
+The GPT session runner uses its own environment file at `/gpt-home/runner/.env`.
+
+| Variable          | Required | Description           |
+| :---------------- | :------: | :-------------------- |
+| `OPENAI_API_KEY`  |   Yes    | OpenAI GPT API key    |
 
 ## Local Development
 
@@ -124,12 +132,12 @@ uv run pytest
 ### Docker
 
 ```bash
-docker build -t claude-runner .
+docker build -t gpt-runner .
 docker run -p 8000:8000 \
-  -v /claude-home:/claude-home \
+  -v /gpt-home:/gpt-home \
   -e API_HOST=0.0.0.0 \
   -e API_KEY=your-secret-key \
-  claude-runner
+  gpt-runner
 ```
 
 ### CI/CD
@@ -190,7 +198,7 @@ Base path: `/api/v1`
 
 | Method | Path           | Description                 |
 | :----- | :------------- | :-------------------------- |
-| POST   | `/admin/wake`  | Trigger Claude wake session |
+| POST   | `/admin/wake`  | Trigger GPT wake session |
 | POST   | `/admin/news`  | Upload news entry           |
 | POST   | `/admin/gifts` | Upload gift                 |
 
